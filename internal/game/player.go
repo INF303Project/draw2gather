@@ -1,18 +1,27 @@
 package game
 
-import "github.com/gorilla/websocket"
+import (
+	"context"
+
+	"github.com/gorilla/websocket"
+)
 
 type Player struct {
 	id   string
+	name string
+
+	ctx  context.Context
 	conn *websocket.Conn
 
 	game *Game
 	ch   chan *Message
 }
 
-func NewPlayer(id string, conn *websocket.Conn, game *Game) *Player {
+func NewPlayer(id, name string, ctx context.Context, conn *websocket.Conn, game *Game) *Player {
 	return &Player{
 		id:   id,
+		name: name,
+		ctx:  ctx,
 		conn: conn,
 		ch:   make(chan *Message),
 		game: game,
@@ -29,7 +38,7 @@ func (p *Player) ReadPump() {
 			return
 		}
 
-		msg.ID = p.id
+		msg.player = p
 		p.game.ch <- &msg
 	}
 }

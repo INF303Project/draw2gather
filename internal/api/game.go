@@ -1,9 +1,11 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
+	"cloud.google.com/go/firestore"
 	"github.com/alperenunal/draw2gather/internal/game"
 )
 
@@ -64,17 +66,17 @@ func (h *apiHandler) joinGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, ok := g.BannedPlayers[playerID]; ok {
-		http.Error(w, "you are banned from this game", http.StatusForbidden)
-		return
+	for _, p := range g.BannedPlayers {
+		if p == playerID {
+			http.Error(w, "you are banned from this game", http.StatusForbidden)
+			return
+		}
 	}
 
-	_, err = h.db.Collection("games").Doc(req.GameID).Set(r.Context(), &gameObject{
-		MaxPlayers:     g.MaxPlayers,
-		TargetScore:    g.TargetScore,
-		Language:       g.Language,
-		Visibility:     g.Visibility,
-		CurrentPlayers: g.CurrentPlayers + 1,
+	_, err = h.db.Collection("games").Doc(req.GameID).Update(r.Context(), []firestore.Update{
+		{
+			Path: "current_players", Value: firestore.Increment(1),
+		},
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -92,6 +94,7 @@ func (h *apiHandler) joinServer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	playerID := h.sessions.GetString(r.Context(), "player_id")
+	name := h.sessions.GetString(r.Context(), "name")
 
 	g := game.Hub.Get(gameID)
 	if g == nil {
@@ -99,13 +102,14 @@ func (h *apiHandler) joinServer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := context.WithoutCancel(r.Context())
 	conn, err := h.ws.Upgrade(w, r, nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	player := game.NewPlayer(playerID, conn, g)
+	player := game.NewPlayer(playerID, name, ctx, conn, g)
 	go player.ReadPump()
 	go player.WritePump()
 	g.Register(player)

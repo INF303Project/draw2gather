@@ -75,14 +75,16 @@ func (h *apiHandler) createUser(w http.ResponseWriter, r *http.Request) {
 }
 
 type getUserResp struct {
-	UserID string `json:"user_id,omitempty"`
 	Name   string `json:"name"`
+	UserID string `json:"user_id,omitempty"`
+	GameID string `json:"game_id,omitempty"`
 }
 
 // GET /user
 func (h *apiHandler) getUser(w http.ResponseWriter, r *http.Request) {
 	name := h.sessions.GetString(r.Context(), "name")
 	userID := h.sessions.GetString(r.Context(), "user_id")
+	gameID := h.sessions.GetString(r.Context(), "game_id")
 
 	if name == "" {
 		nameID := rand.Intn(1000)
@@ -92,8 +94,9 @@ func (h *apiHandler) getUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := json.NewEncoder(w).Encode(&getUserResp{
-		UserID: userID,
 		Name:   name,
+		UserID: userID,
+		GameID: gameID,
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

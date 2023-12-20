@@ -75,7 +75,15 @@ func (h *apiHandler) createGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	g := game.NewGame(id, playerID, h.db)
+	settings := &game.GameSetting{
+		ID:          id,
+		Owner:       playerID,
+		TargetScore: req.TargetScore,
+		Words:       []string{"test"}, // FIXME get words from db
+		DB:          h.db,
+		Sessions:    h.sessions,
+	}
+	g := game.NewGame(settings)
 	go g.Run()
 	game.Hub.Set(id, g)
 }
