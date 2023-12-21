@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"cloud.google.com/go/firestore"
 	"github.com/alperenunal/draw2gather/internal/game"
 	"github.com/google/uuid"
 )
@@ -22,6 +23,7 @@ func (h *apiHandler) handleGames(w http.ResponseWriter, r *http.Request) {
 
 type createGameReq struct {
 	Language    string `json:"language"`
+	WordSet     string `json:"word_set"`
 	MaxPlayers  int    `json:"max_players"`
 	TargetScore int    `json:"target_score"`
 	Visibility  bool   `json:"visibility"`
@@ -52,6 +54,33 @@ func (h *apiHandler) createGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var (
+		words []string
+		doc   *firestore.DocumentSnapshot
+	)
+
+	if req.WordSet == "" {
+		doc, err = h.db.Collection("word_sets").Doc(req.Language).Get(r.Context())
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	} else {
+		doc, err = h.db.Collection("players").Doc(playerID).Collection("word_sets").Doc(req.WordSet).Get(r.Context())
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	var wordSet wordSetObject
+	err = doc.DataTo(&wordSet)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	words = wordSet.Words
+
 	id := uuid.NewString()
 	_, err = h.db.Collection("games").Doc(id).Set(r.Context(), &gameObject{
 		Owner:          playerID,
@@ -60,8 +89,8 @@ func (h *apiHandler) createGame(w http.ResponseWriter, r *http.Request) {
 		TargetScore:    req.TargetScore,
 		MaxPlayers:     req.MaxPlayers,
 		CurrentPlayers: 0,
+		BannedPlayers:  []string{},
 	})
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -75,11 +104,11 @@ func (h *apiHandler) createGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	settings := &game.GameSetting{
+	settings := &game.GameSettings{
 		ID:          id,
 		Owner:       playerID,
 		TargetScore: req.TargetScore,
-		Words:       []string{"test"}, // FIXME get words from db
+		Words:       words,
 		DB:          h.db,
 		Sessions:    h.sessions,
 	}

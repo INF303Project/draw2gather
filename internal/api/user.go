@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-	"strings"
 
 	"github.com/google/uuid"
 )
@@ -31,6 +30,11 @@ type createUserResp struct {
 
 // POST /user
 func (h *apiHandler) createUser(w http.ResponseWriter, r *http.Request) {
+	if h.sessions.GetString(r.Context(), "game_id") != "" {
+		http.Error(w, "already in game", http.StatusUnauthorized)
+		return
+	}
+
 	var req createUserReq
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
@@ -43,27 +47,11 @@ func (h *apiHandler) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	auth := r.Header.Get("Authorization")
-	bearer := strings.TrimPrefix(auth, "Bearer: ")
-
-	if bearer != "" {
-		token, err := h.auth.VerifyIDToken(r.Context(), bearer)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
-			return
-		}
-		h.sessions.Put(r.Context(), "user_id", token.UID)
-	}
-
 	if h.sessions.GetString(r.Context(), "player_id") == "" {
 		h.sessions.Put(r.Context(), "player_id", uuid.NewString())
-		h.sessions.Put(r.Context(), "name", req.Name)
-	} else {
-		name := h.sessions.GetString(r.Context(), "name")
-		if name != req.Name {
-			h.sessions.Put(r.Context(), "name", req.Name)
-		}
 	}
+	h.sessions.Put(r.Context(), "name", req.Name)
+	h.sessions.RenewToken(r.Context())
 
 	err = json.NewEncoder(w).Encode(&createUserResp{
 		Name: req.Name,

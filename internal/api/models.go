@@ -10,3 +10,12 @@ type gameObject struct {
 	CurrentPlayers int      `firestore:"current_players" json:"current_players"`
 	BannedPlayers  []string `firestore:"banned_players" json:"-"`
 }
+
+type userObject struct {
+}
+
+type wordSetObject struct {
+	Name     string   `firestore:"-" json:"name"`
+	Language string   `firestore:"language" json:"language"`
+	Words    []string `firestore:"words" json:"words"`
+}
