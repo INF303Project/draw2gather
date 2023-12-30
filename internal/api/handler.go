@@ -63,7 +63,7 @@ func NewHandler(app *firebase.App) (http.Handler, error) {
 	handler := http.Handler(mux)
 	handler = sessions.LoadAndSave(handler)
 	handler = cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://172.17.148.155:5173"},
+		AllowedOrigins:   []string{"http://192.168.0.10:5173"},
 		AllowedHeaders:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowCredentials: true,

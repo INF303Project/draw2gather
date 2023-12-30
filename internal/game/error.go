@@ -3,5 +3,5 @@ package game
 import "errors"
 
 var (
-	ErrInvalidAction = errors.New("invalid action")
+	errInvalidAction = errors.New("invalid action")
 )

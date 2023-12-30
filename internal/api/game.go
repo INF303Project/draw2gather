@@ -41,9 +41,6 @@ func (h *apiHandler) joinGame(w http.ResponseWriter, r *http.Request) {
 
 	gameID := h.sessions.GetString(r.Context(), "game_id")
 	if gameID != "" {
-		if gameID == req.GameID {
-			return
-		}
 		http.Error(w, "already in a game", http.StatusForbidden)
 		return
 	}
@@ -61,9 +58,17 @@ func (h *apiHandler) joinGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if g.CurrentPlayers >= g.MaxPlayers {
+	if len(g.CurrentPlayers) >= g.MaxPlayers {
 		http.Error(w, "game is full", http.StatusForbidden)
 		return
+	}
+
+	name := h.sessions.GetString(r.Context(), "name")
+	for _, n := range g.CurrentPlayers {
+		if n == name {
+			http.Error(w, "name already taken", http.StatusForbidden)
+			return
+		}
 	}
 
 	for _, p := range g.BannedPlayers {
@@ -75,7 +80,7 @@ func (h *apiHandler) joinGame(w http.ResponseWriter, r *http.Request) {
 
 	_, err = h.db.Collection("games").Doc(req.GameID).Update(r.Context(), []firestore.Update{
 		{
-			Path: "current_players", Value: firestore.Increment(1),
+			Path: "current_players", Value: firestore.ArrayUnion(name),
 		},
 	})
 	if err != nil {

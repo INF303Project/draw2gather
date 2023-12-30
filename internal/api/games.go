@@ -59,7 +59,7 @@ func (h *apiHandler) createGame(w http.ResponseWriter, r *http.Request) {
 		doc   *firestore.DocumentSnapshot
 	)
 
-	if req.WordSet == "" {
+	if req.WordSet == "default" {
 		doc, err = h.db.Collection("word_sets").Doc(req.Language).Get(r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -88,7 +88,7 @@ func (h *apiHandler) createGame(w http.ResponseWriter, r *http.Request) {
 		Language:       req.Language,
 		TargetScore:    req.TargetScore,
 		MaxPlayers:     req.MaxPlayers,
-		CurrentPlayers: 0,
+		CurrentPlayers: []string{},
 		BannedPlayers:  []string{},
 	})
 	if err != nil {

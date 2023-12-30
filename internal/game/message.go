@@ -1,15 +1,21 @@
 package game
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type action int
 
 const (
+	greet action = iota
+
 	// General actions
-	join action = iota
+	join
 	quit
 	kick
 	chat
+
+	newOwner
 
 	// Waiting state actions
 	start
@@ -32,8 +38,10 @@ const (
 	guess
 
 	correctGuess
+	updateScore
 
 	// State actions
+	waiting
 	starting
 	picking
 	drawing
@@ -46,13 +54,13 @@ type Message struct {
 	Payload string  `json:"payload,omitempty"`
 }
 
-type payload[T any] struct {
-	Value T `json:"value,omitempty"`
+type payloadType interface {
+	string | int | []int | [2]string | *Player |
+		pointsPayload | messagePayload | scorePayload | gamePayload
 }
 
-type userPayload[T any] struct {
-	ID    string `json:"id"`
-	Value T      `json:"value,omitempty"`
+type payload[T payloadType] struct {
+	Value T `json:"value,omitempty"`
 }
 
 type point struct {
@@ -63,6 +71,41 @@ type point struct {
 type pointsPayload struct {
 	Start point `json:"start"`
 	End   point `json:"end"`
+}
+
+type messagePayload struct {
+	Player  string `json:"player"`
+	Message string `json:"message"`
+}
+
+type scorePayload struct {
+	Player string `json:"player"`
+	Score  int    `json:"score"`
+}
+
+type gamePayload struct {
+	State         string             `json:"state"`
+	Player        string             `json:"player"`
+	Owner         string             `json:"owner"`
+	CurrentPlayer string             `json:"current_player"`
+	Players       map[string]*Player `json:"players"`
+	Commands      []*Message         `json:"commands"`
+}
+
+func newEmptyMessage(act action) *Message {
+	return &Message{
+		Action: act,
+	}
+}
+
+func newMessage[T payloadType](act action, val T) *Message {
+	payload, _ := json.Marshal(&payload[T]{
+		Value: val,
+	})
+	return &Message{
+		Action:  act,
+		Payload: string(payload),
+	}
 }
 
 func (m *Message) decodeMessage() (any, error) {
@@ -101,7 +144,8 @@ func (m *Message) decodeMessage() (any, error) {
 			return nil, err
 		}
 		return p, nil
-	}
 
-	return nil, nil
+	default:
+		return nil, errInvalidAction
+	}
 }

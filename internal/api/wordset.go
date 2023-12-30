@@ -43,6 +43,11 @@ func (h *apiHandler) createWordSet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.Name == "default" {
+		http.Error(w, "default is a reserved name", http.StatusBadRequest)
+		return
+	}
+
 	if len(req.Words) < 50 {
 		http.Error(w, "at least 50 words are required", http.StatusBadRequest)
 		return

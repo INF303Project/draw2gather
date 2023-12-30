@@ -7,7 +7,7 @@ type gameObject struct {
 	Language       string   `firestore:"language" json:"language"`
 	TargetScore    int      `firestore:"target_score" json:"target_score"`
 	MaxPlayers     int      `firestore:"max_players" json:"max_players"`
-	CurrentPlayers int      `firestore:"current_players" json:"current_players"`
+	CurrentPlayers []string `firestore:"current_players" json:"current_players"`
 	BannedPlayers  []string `firestore:"banned_players" json:"-"`
 }
 
