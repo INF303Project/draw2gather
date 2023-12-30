@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -66,7 +67,13 @@ func (h *apiHandler) createGame(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		doc, err = h.db.Collection("players").Doc(playerID).Collection("word_sets").Doc(req.WordSet).Get(r.Context())
+		userID := h.sessions.GetString(r.Context(), "user_id")
+		if userID == "" {
+			http.Error(w, "user_id is required", http.StatusUnauthorized)
+			return
+		}
+
+		doc, err = h.db.Collection("players").Doc(userID).Collection("word_sets").Doc(req.WordSet).Get(r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -77,6 +84,11 @@ func (h *apiHandler) createGame(w http.ResponseWriter, r *http.Request) {
 	err = doc.DataTo(&wordSet)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if wordSet.Language != req.Language {
+		fmt.Println(wordSet.Language, req.Language)
+		http.Error(w, "word set language does not match game language", http.StatusBadRequest)
 		return
 	}
 	words = wordSet.Words

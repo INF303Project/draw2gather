@@ -152,9 +152,12 @@ func (g *Game) pickWords() [2]string {
 	for i := 0; i < 2; i++ {
 		for word := range g.words {
 			words[i] = word
+			delete(g.words, word)
 			break
 		}
 	}
+	g.words[words[0]] = struct{}{}
+	g.words[words[1]] = struct{}{}
 	return words
 }
 

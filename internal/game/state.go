@@ -232,7 +232,7 @@ func (s *endingState) Enter(g *Game) {
 	slog.Info("Entering ending state")
 
 	msg := newEmptyMessage(ending)
-	g.sendToAll(msg) // FIXME
+	g.sendToAll(msg)
 
 	s.timer = time.AfterFunc(15*time.Second, func() {
 		g.stateCh <- &waitingState{}
