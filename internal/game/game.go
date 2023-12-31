@@ -184,6 +184,7 @@ func (g *Game) removePlayer(player *Player) (state, error) {
 	g.sessions.Remove(player.ctx, "game_id")
 	g.sessions.Commit(player.ctx)
 
+	player.quited = true
 	delete(g.players, player.ID)
 	close(player.ch)
 	g.playerQueue = slices.DeleteFunc(g.playerQueue, func(p *Player) bool {
@@ -365,8 +366,10 @@ func (g *Game) handleGuess(m *Message) (state, error) {
 		return nil, err
 	}
 	p := in.(payload[string])
+	ans := strings.TrimSpace(p.Value)
+	ans = strings.ToLower(ans)
 
-	if strings.ToLower(p.Value) == g.currentWord {
+	if ans == g.currentWord {
 		msg := newMessage(correctGuess, m.player.ID)
 		g.sendToAll(msg)
 
@@ -421,6 +424,7 @@ func (g *Game) handleGuess(m *Message) (state, error) {
 			Player:  m.player.Name,
 			Message: p.Value,
 		})
+		g.commands = append(g.commands, msg)
 		g.sendToAll(msg)
 	}
 

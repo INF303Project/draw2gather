@@ -16,7 +16,8 @@ type waitingState struct {
 
 func (s *waitingState) Enter(g *Game) {
 	slog.Info("Entering waiting state")
-	clear(g.commands)
+
+	g.commands = []*Message{}
 	clear(g.answeredPlayers)
 	g.words = g.dictionary
 	g.currentPlayer = nil
@@ -24,6 +25,7 @@ func (s *waitingState) Enter(g *Game) {
 	for _, p := range g.players {
 		p.Score = 0
 	}
+
 	g.sendToAll(newEmptyMessage(waiting))
 }
 
@@ -69,7 +71,7 @@ type startingState struct {
 func (s *startingState) Enter(g *Game) {
 	slog.Info("Entering starting state")
 
-	clear(g.commands)
+	g.commands = []*Message{}
 	clear(g.answeredPlayers)
 	g.currentPlayer = g.pickPlayer()
 

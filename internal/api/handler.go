@@ -39,7 +39,7 @@ func NewHandler(app *firebase.App) (http.Handler, error) {
 	sessions.Cookie.Name = "draw2gather"
 	sessions.Cookie.SameSite = http.SameSiteStrictMode
 	sessions.Cookie.HttpOnly = true
-	sessions.Cookie.Secure = true
+	sessions.Cookie.Secure = false
 
 	ws := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool { return true },
@@ -63,7 +63,8 @@ func NewHandler(app *firebase.App) (http.Handler, error) {
 	handler := http.Handler(mux)
 	handler = sessions.LoadAndSave(handler)
 	handler = cors.New(cors.Options{
-		AllowedOrigins:   []string{"https://www.draw2gather.online", "https://draw2gather.online"},
+		// AllowedOrigins:   []string{"https://www.draw2gather.online", "https://draw2gather.online"},
+		AllowedOrigins:   []string{"http://192.168.0.10:5173"},
 		AllowedHeaders:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowCredentials: true,
