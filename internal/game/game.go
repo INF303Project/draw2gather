@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"slices"
 	"strings"
+	"sync"
 
 	"cloud.google.com/go/firestore"
 	"github.com/alexedwards/scs/v2"
@@ -18,6 +19,7 @@ type Game struct {
 	sessions *scs.SessionManager
 
 	closed   bool
+	closedMu sync.Mutex
 	ch       chan *Message
 	register chan *Player
 
@@ -59,6 +61,7 @@ func NewGame(settings *GameSettings) *Game {
 		sessions: settings.Sessions,
 
 		closed:   false,
+		closedMu: sync.Mutex{},
 		ch:       make(chan *Message),
 		register: make(chan *Player),
 
@@ -90,7 +93,7 @@ func (g *Game) Run() {
 
 		case msg, ok := <-g.ch:
 			if !ok {
-				g.close()
+				g.delete()
 				return
 			}
 
@@ -113,11 +116,19 @@ func (g *Game) Run() {
 }
 
 func (g *Game) Closed() bool {
+	g.closedMu.Lock()
+	defer g.closedMu.Unlock()
 	return g.closed
 }
 
 func (g *Game) close() {
+	g.closedMu.Lock()
+	defer g.closedMu.Unlock()
 	g.closed = true
+	close(g.ch)
+}
+
+func (g *Game) delete() {
 	Hub.Delete(g.id)
 	g.db.Collection("games").Doc(g.id).Delete(context.Background())
 }

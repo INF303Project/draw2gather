@@ -32,7 +32,7 @@ func NewPlayer(id, name string, ctx context.Context, conn *websocket.Conn, game 
 
 func (p *Player) ReadPump() {
 	defer func() {
-		if !p.game.closed {
+		if !p.game.Closed() {
 			p.game.ch <- &Message{
 				player: p,
 				Action: quit,

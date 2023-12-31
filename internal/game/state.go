@@ -274,7 +274,7 @@ type closingState struct {
 
 func (s *closingState) Enter(g *Game) {
 	slog.Info("Entering closing state")
-	close(g.ch)
+	g.close()
 }
 
 func (s *closingState) Exit(g *Game) {
