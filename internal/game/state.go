@@ -1,7 +1,6 @@
 package game
 
 import (
-	"log/slog"
 	"time"
 )
 
@@ -15,7 +14,7 @@ type waitingState struct {
 }
 
 func (s *waitingState) Enter(g *Game) {
-	slog.Info("Entering waiting state")
+	g.logger.Info("Entering waiting state")
 
 	g.commands = []*Message{}
 	clear(g.answeredPlayers)
@@ -30,7 +29,7 @@ func (s *waitingState) Enter(g *Game) {
 }
 
 func (s *waitingState) Exit(g *Game) {
-	slog.Info("Exiting waiting state")
+	g.logger.Info("Exiting waiting state")
 }
 
 func (s *waitingState) HandleMessage(g *Game, m *Message) state {
@@ -38,25 +37,25 @@ func (s *waitingState) HandleMessage(g *Game, m *Message) state {
 	case quit:
 		state, err := g.handleQuit(m)
 		if err != nil {
-			slog.Error(err.Error())
+			g.logger.Error(err.Error())
 		}
 		return state
 	case kick:
 		state, err := g.handleKick(m)
 		if err != nil {
-			slog.Error(err.Error())
+			g.logger.Error(err.Error())
 		}
 		return state
 	case chat:
 		err := g.handleChat(m)
 		if err != nil {
-			slog.Error(err.Error())
+			g.logger.Error(err.Error())
 		}
 		return nil
 	case start:
 		state, err := g.handleStart(m)
 		if err != nil {
-			slog.Error(err.Error())
+			g.logger.Error(err.Error())
 		}
 		return state
 	default:
@@ -69,7 +68,7 @@ type startingState struct {
 }
 
 func (s *startingState) Enter(g *Game) {
-	slog.Info("Entering starting state")
+	g.logger.Info("Entering starting state")
 
 	g.commands = []*Message{}
 	clear(g.answeredPlayers)
@@ -85,7 +84,7 @@ func (s *startingState) Enter(g *Game) {
 
 func (s *startingState) Exit(g *Game) {
 	s.timer.Stop()
-	slog.Info("Exiting starting state")
+	g.logger.Info("Exiting starting state")
 }
 
 func (s *startingState) HandleMessage(g *Game, m *Message) state {
@@ -93,19 +92,19 @@ func (s *startingState) HandleMessage(g *Game, m *Message) state {
 	case quit:
 		state, err := g.handleQuit(m)
 		if err != nil {
-			slog.Error(err.Error())
+			g.logger.Error(err.Error())
 		}
 		return state
 	case kick:
 		state, err := g.handleKick(m)
 		if err != nil {
-			slog.Error(err.Error())
+			g.logger.Error(err.Error())
 		}
 		return state
 	case chat:
 		err := g.handleChat(m)
 		if err != nil {
-			slog.Error(err.Error())
+			g.logger.Error(err.Error())
 		}
 		return nil
 	default:
@@ -118,7 +117,7 @@ type pickingState struct {
 }
 
 func (s *pickingState) Enter(g *Game) {
-	slog.Info("Entering picking state")
+	g.logger.Info("Entering picking state")
 
 	words := g.pickWords()
 
@@ -135,7 +134,7 @@ func (s *pickingState) Enter(g *Game) {
 
 func (s *pickingState) Exit(g *Game) {
 	s.timer.Stop()
-	slog.Info("Exiting picking state")
+	g.logger.Info("Exiting picking state")
 }
 
 func (s *pickingState) HandleMessage(g *Game, m *Message) state {
@@ -143,25 +142,25 @@ func (s *pickingState) HandleMessage(g *Game, m *Message) state {
 	case quit:
 		state, err := g.handleQuit(m)
 		if err != nil {
-			slog.Error(err.Error())
+			g.logger.Error(err.Error())
 		}
 		return state
 	case kick:
 		state, err := g.handleKick(m)
 		if err != nil {
-			slog.Error(err.Error())
+			g.logger.Error(err.Error())
 		}
 		return state
 	case chat:
 		err := g.handleChat(m)
 		if err != nil {
-			slog.Error(err.Error())
+			g.logger.Error(err.Error())
 		}
 		return nil
 	case pick:
 		state, err := g.handlePick(m)
 		if err != nil {
-			slog.Error(err.Error())
+			g.logger.Error(err.Error())
 		}
 		return state
 	}
@@ -173,7 +172,7 @@ type drawingState struct {
 }
 
 func (s *drawingState) Enter(g *Game) {
-	slog.Info("Entering drawing state")
+	g.logger.Info("Entering drawing state")
 
 	msg := newEmptyMessage(drawing)
 	g.sendToAll(msg)
@@ -185,7 +184,7 @@ func (s *drawingState) Enter(g *Game) {
 
 func (s *drawingState) Exit(g *Game) {
 	s.timer.Stop()
-	slog.Info("Exiting drawing state")
+	g.logger.Info("Exiting drawing state")
 }
 
 func (s *drawingState) HandleMessage(g *Game, m *Message) state {
@@ -193,32 +192,32 @@ func (s *drawingState) HandleMessage(g *Game, m *Message) state {
 	case quit:
 		state, err := g.handleQuit(m)
 		if err != nil {
-			slog.Error(err.Error())
+			g.logger.Error(err.Error())
 		}
 		return state
 	case kick:
 		state, err := g.handleKick(m)
 		if err != nil {
-			slog.Error(err.Error())
+			g.logger.Error(err.Error())
 		}
 		return state
 	case chat:
 		err := g.handleChat(m)
 		if err != nil {
-			slog.Error(err.Error())
+			g.logger.Error(err.Error())
 		}
 		return nil
 	case draw, erase, lineDraw, rectDraw, rectFill, circleDraw, circleFill,
 		changeColor, changePencilSize, changeEraserSize, clearBoard:
 		err := g.handleBoardAction(m)
 		if err != nil {
-			slog.Error(err.Error())
+			g.logger.Error(err.Error())
 		}
 		return nil
 	case guess:
 		state, err := g.handleGuess(m)
 		if err != nil {
-			slog.Error(err.Error())
+			g.logger.Error(err.Error())
 		}
 		return state
 	default:
@@ -231,7 +230,7 @@ type endingState struct {
 }
 
 func (s *endingState) Enter(g *Game) {
-	slog.Info("Entering ending state")
+	g.logger.Info("Entering ending state")
 
 	msg := newEmptyMessage(ending)
 	g.sendToAll(msg)
@@ -243,7 +242,7 @@ func (s *endingState) Enter(g *Game) {
 
 func (s *endingState) Exit(g *Game) {
 	s.timer.Stop()
-	slog.Info("Exiting ending state")
+	g.logger.Info("Exiting ending state")
 }
 
 func (s *endingState) HandleMessage(g *Game, m *Message) state {
@@ -251,19 +250,19 @@ func (s *endingState) HandleMessage(g *Game, m *Message) state {
 	case quit:
 		state, err := g.handleQuit(m)
 		if err != nil {
-			slog.Error(err.Error())
+			g.logger.Error(err.Error())
 		}
 		return state
 	case kick:
 		state, err := g.handleKick(m)
 		if err != nil {
-			slog.Error(err.Error())
+			g.logger.Error(err.Error())
 		}
 		return state
 	case chat:
 		err := g.handleChat(m)
 		if err != nil {
-			slog.Error(err.Error())
+			g.logger.Error(err.Error())
 		}
 		return nil
 	default:
@@ -275,12 +274,12 @@ type closingState struct {
 }
 
 func (s *closingState) Enter(g *Game) {
-	slog.Info("Entering closing state")
+	g.logger.Info("Entering closing state")
 	g.close()
 }
 
 func (s *closingState) Exit(g *Game) {
-	slog.Info("Exiting closing state")
+	g.logger.Info("Exiting closing state")
 }
 
 func (s *closingState) HandleMessage(g *Game, m *Message) state {

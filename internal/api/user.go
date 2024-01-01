@@ -31,7 +31,7 @@ type createUserResp struct {
 // POST /user
 func (h *apiHandler) createUser(w http.ResponseWriter, r *http.Request) {
 	if h.sessions.GetString(r.Context(), "game_id") != "" {
-		http.Error(w, "already in game", http.StatusUnauthorized)
+		http.Error(w, "already in game", http.StatusForbidden)
 		return
 	}
 

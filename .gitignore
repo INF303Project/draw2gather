@@ -37,3 +37,7 @@ symlink-from
 firebase.json
 www
 scripts
+logs
+
+d2g-kp.pem
+draw2gather

@@ -3,7 +3,9 @@ package game
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
+	"os"
 	"slices"
 	"strings"
 	"sync"
@@ -12,11 +14,17 @@ import (
 	"github.com/alexedwards/scs/v2"
 )
 
+const (
+	gameLogPath = "./logs/games/%s.log"
+)
+
 type Game struct {
 	id       string
 	owner    string
 	db       *firestore.Client
 	sessions *scs.SessionManager
+	logFile  *os.File
+	logger   *slog.Logger
 
 	closed   bool
 	closedMu sync.Mutex
@@ -54,11 +62,20 @@ func NewGame(settings *GameSettings) *Game {
 		words[word] = struct{}{}
 	}
 
+	logFile := fmt.Sprintf(gameLogPath, settings.ID)
+	file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil
+	}
+	logger := slog.New(slog.NewTextHandler(file, nil))
+
 	return &Game{
 		id:       settings.ID,
 		owner:    settings.Owner,
 		db:       settings.DB,
 		sessions: settings.Sessions,
+		logFile:  file,
+		logger:   logger,
 
 		closed:   false,
 		closedMu: sync.Mutex{},
@@ -97,7 +114,8 @@ func (g *Game) Run() {
 				return
 			}
 
-			slog.Info("Received message", slog.Int("action", int(msg.Action)))
+			g.logger.Info("Received message",
+				slog.Int("action", int(msg.Action)), slog.String("payload", msg.Payload))
 			state := g.state.HandleMessage(g, msg)
 			if state != nil {
 				g.state.Exit(g)
@@ -129,6 +147,7 @@ func (g *Game) close() {
 }
 
 func (g *Game) delete() {
+	g.logFile.Close()
 	Hub.Delete(g.id)
 	g.db.Collection("games").Doc(g.id).Delete(context.Background())
 }
@@ -184,7 +203,7 @@ func (g *Game) removePlayer(player *Player) (state, error) {
 	g.sessions.Remove(player.ctx, "game_id")
 	g.sessions.Commit(player.ctx)
 
-	player.quited = true
+	player.quitted = true
 	delete(g.players, player.ID)
 	close(player.ch)
 	g.playerQueue = slices.DeleteFunc(g.playerQueue, func(p *Player) bool {

@@ -27,7 +27,7 @@ type createWordSetReq struct {
 func (h *apiHandler) createWordSet(w http.ResponseWriter, r *http.Request) {
 	userID := h.sessions.GetString(r.Context(), "user_id")
 	if userID == "" {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		http.Error(w, "user_id is required", http.StatusUnauthorized)
 		return
 	}
 
@@ -74,7 +74,7 @@ type getWordSetsResp struct {
 func (h *apiHandler) getWordSets(w http.ResponseWriter, r *http.Request) {
 	userID := h.sessions.GetString(r.Context(), "user_id")
 	if userID == "" {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		http.Error(w, "user_id is required", http.StatusUnauthorized)
 		return
 	}
 

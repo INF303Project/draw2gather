@@ -23,7 +23,7 @@ func (h *apiHandler) login(w http.ResponseWriter, r *http.Request) {
 
 	gameID := h.sessions.GetString(r.Context(), "game_id")
 	if gameID != "" {
-		http.Error(w, "already in game", http.StatusUnauthorized)
+		http.Error(w, "already in game", http.StatusForbidden)
 		return
 	}
 
@@ -61,7 +61,7 @@ func (h *apiHandler) logout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if h.sessions.GetString(r.Context(), "game_id") != "" {
-		http.Error(w, "in game", http.StatusUnauthorized)
+		http.Error(w, "in game", http.StatusForbidden)
 		return
 	}
 

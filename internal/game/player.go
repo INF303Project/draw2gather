@@ -11,9 +11,9 @@ type Player struct {
 	Name  string `json:"name"`
 	Score int    `json:"score"`
 
-	quited bool            `json:"-"`
-	ctx    context.Context `json:"-"`
-	conn   *websocket.Conn `json:"-"`
+	quitted bool            `json:"-"`
+	ctx     context.Context `json:"-"`
+	conn    *websocket.Conn `json:"-"`
 
 	game *Game         `json:"-"`
 	ch   chan *Message `json:"-"`
@@ -21,20 +21,20 @@ type Player struct {
 
 func NewPlayer(id, name string, ctx context.Context, conn *websocket.Conn, game *Game) *Player {
 	return &Player{
-		ID:     id,
-		Name:   name,
-		Score:  0,
-		quited: false,
-		ctx:    ctx,
-		conn:   conn,
-		ch:     make(chan *Message, 256),
-		game:   game,
+		ID:      id,
+		Name:    name,
+		Score:   0,
+		quitted: false,
+		ctx:     ctx,
+		conn:    conn,
+		ch:      make(chan *Message, 256),
+		game:    game,
 	}
 }
 
 func (p *Player) ReadPump() {
 	defer func() {
-		if !p.quited {
+		if !p.quitted {
 			p.game.ch <- &Message{
 				player: p,
 				Action: quit,

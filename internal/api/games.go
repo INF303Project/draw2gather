@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -63,7 +62,7 @@ func (h *apiHandler) createGame(w http.ResponseWriter, r *http.Request) {
 	if req.WordSet == "default" {
 		doc, err = h.db.Collection("word_sets").Doc(req.Language).Get(r.Context())
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 	} else {
@@ -75,7 +74,7 @@ func (h *apiHandler) createGame(w http.ResponseWriter, r *http.Request) {
 
 		doc, err = h.db.Collection("players").Doc(userID).Collection("word_sets").Doc(req.WordSet).Get(r.Context())
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 	}
@@ -87,14 +86,13 @@ func (h *apiHandler) createGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if wordSet.Language != req.Language {
-		fmt.Println(wordSet.Language, req.Language)
 		http.Error(w, "word set language does not match game language", http.StatusBadRequest)
 		return
 	}
 	words = wordSet.Words
 
 	id := uuid.NewString()
-	_, err = h.db.Collection("games").Doc(id).Set(r.Context(), &gameObject{
+	_, err = h.db.Collection("games").Doc(id).Create(r.Context(), &gameObject{
 		Owner:          playerID,
 		Visibility:     req.Visibility,
 		Language:       req.Language,
