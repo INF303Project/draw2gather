@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	opt := option.WithCredentialsFile("firebase.json")
+	opt := option.WithCredentialsFile("admin-sdk.json")
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		log.Fatalln(err)

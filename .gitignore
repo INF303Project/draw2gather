@@ -34,10 +34,10 @@ symlink-from
 # Other
 .vscode
 .firebase
-firebase.json
-www
-scripts
-logs
+*.log
 
+logs
+www
+
+admin-sdk.json
 d2g-kp.pem
-draw2gather
