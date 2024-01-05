@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"net/http"
+	"os"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go/v4"
@@ -21,6 +22,10 @@ type apiHandler struct {
 }
 
 func NewHandler(app *firebase.App) (http.Handler, error) {
+	if err := os.MkdirAll("./logs/games", 0755); err != nil {
+		return nil, err
+	}
+
 	ctx := context.Background()
 
 	firestore, err := app.Firestore(ctx)
