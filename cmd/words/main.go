@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"context"
-	"io"
 	"os"
 	"slices"
 	"strings"
@@ -37,12 +36,14 @@ func main() {
 		panic(err)
 	}
 
-	storeTR(firestore)
+	store(firestore, "TR", trFile)
+	store(firestore, "EN", enFile)
+	store(firestore, "DE", deFile)
 }
 
-func storeTR(firestore *firestore.Client) {
+func store(firestore *firestore.Client, language, fileName string) {
 	var words []string
-	tr, _ := os.Open(trFile)
+	tr, _ := os.Open(fileName)
 	scanner := bufio.NewScanner(tr)
 
 	for scanner.Scan() {
@@ -53,27 +54,10 @@ func storeTR(firestore *firestore.Client) {
 
 	slices.Sort(words)
 	ctx := context.Background()
-	firestore.Collection("word_sets").Doc("TR").
+	firestore.Collection("word_sets").Doc(language).
 		Set(ctx, &WordSet{
-			Lang:  "TR",
+			Lang:  language,
 			Name:  "default",
 			Words: words,
 		})
-}
-
-func sortTR() {
-	var words []string
-	tr, _ := os.Open(trFile)
-	scanner := bufio.NewScanner(tr)
-
-	for scanner.Scan() {
-		word := scanner.Text()
-		words = append(words, strings.ToLower(word))
-	}
-	tr.Close()
-
-	slices.Sort(words)
-	tr, _ = os.OpenFile(trFile, os.O_WRONLY|os.O_TRUNC, 0644)
-	io.WriteString(tr, strings.Join(words, "\n"))
-	tr.Close()
 }

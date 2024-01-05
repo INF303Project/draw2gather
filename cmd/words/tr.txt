@@ -5,6 +5,7 @@ balon
 bilardo
 bornoz
 bıçak
+cezve
 cüce
 cüzdan
 dedektör
@@ -58,7 +59,6 @@ tır
 vampir
 yarışmak
 yastık
-cezve
 çakmak
 çatı
 çekmece
