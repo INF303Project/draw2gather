@@ -10,6 +10,8 @@ import (
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go/v4"
 	"google.golang.org/api/option"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 type WordSet struct {

@@ -8,6 +8,8 @@ import (
 	firebase "firebase.google.com/go/v4"
 	"github.com/alperenunal/draw2gather/internal/api"
 	"google.golang.org/api/option"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {

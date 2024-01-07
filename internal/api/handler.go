@@ -44,7 +44,7 @@ func NewHandler(app *firebase.App) (http.Handler, error) {
 	sessions.Cookie.Name = "draw2gather"
 	sessions.Cookie.SameSite = http.SameSiteStrictMode
 	sessions.Cookie.HttpOnly = true
-	sessions.Cookie.Secure = true
+	sessions.Cookie.Secure = false
 
 	ws := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool { return true },
