@@ -69,7 +69,7 @@ func NewHandler(app *firebase.App) (http.Handler, error) {
 	handler := http.Handler(mux)
 	handler = sessions.LoadAndSave(handler)
 	handler = cors.New(cors.Options{
-		AllowedOrigins:   []string{"https://draw2gather.online", "https://www.draw2gather.online"},
+		AllowedOrigins:   []string{"http://localhost:5173"},
 		AllowedHeaders:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowCredentials: true,
