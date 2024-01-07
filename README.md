@@ -1,6 +1,6 @@
 ## Draw2Gather
 
-This repository contains API's and game handling logic of Draw2Gather. It is written in Go and uses Firebase Firestore database and Firebase Authentication, therefore it requires to connect to a Firebase project. Before setup you should install [Go](https://go.dev/dl/), [NodeJS](https://nodejs.org/en/download/current), and [Firebase CLI](https://www.npmjs.com/package/firebase-tools).
+This repository contains API's and game handling logic of Draw2Gather. It is written in Go and uses Firebase Firestore database and Firebase Authentication, therefore it requires to connect to a Firebase project. Before setup you should install [Go](https://go.dev/dl/), [NodeJS](https://nodejs.org/en/download/current), and [Firebase CLI](https://www.npmjs.com/package/firebase-tools). Firebase CLI requires Java 11 or later.
 
 ### Configuration
 
@@ -21,10 +21,16 @@ Main branch is for production, right now it's available at [api.draw2gather.onli
 
 - Checkout to demo brach
     ```
+    cd draw2gather
     git checkout demo
     ```
 
-- Create a new firebase project
+- Login to Firebase (on Windows you might need to change ExecutionPolicy)
+    ```
+    firebase login
+    ```
+
+- Create a new Firebase project
     ```
     firebase projects:create <<name>>
     firebase use <<name>>
@@ -38,7 +44,7 @@ Main branch is for production, right now it's available at [api.draw2gather.onli
     FIRESTORE_EMULATOR_HOST="127.0.0.1:9100"
     ```
 
-- Start firebase emulators
+- Start Firebase emulators (this will install emulators if necessary)
     ```
     firebase emulators:start
     ```
